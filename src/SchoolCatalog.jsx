@@ -5,6 +5,8 @@ export default function SchoolCatalog() {
   const [filter, setFilter] = useState("");
   const [sort, setSort] = useState("");
   const [direction, setDirection] = useState("asc");
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 5;
 
   useEffect(() => {
     fetch('/api/courses.json')
@@ -13,7 +15,7 @@ export default function SchoolCatalog() {
   }, [])
 
   const filteredData = courses.filter((course) => course.trimester.toLowerCase().includes(filter.toLowerCase()) || course.courseName.toLowerCase().includes(filter.toLowerCase()));
-
+  
   const sortedData = filteredData.sort((a, b) => {
     if (sort === "Trimester") {
       return a.trimester - b.trimester * (direction === "desc" ? -1 : 1);
@@ -32,6 +34,10 @@ export default function SchoolCatalog() {
     }
   });
 
+  const currentPage = sortedData.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const hasMore = sortedData.length > page * PAGE_SIZE;
+  const hasLess = page > 1;
+  
   const handleSortingChange = (field) => {
     const sortOrder = sort === field && direction === "asc" ? "desc" : "asc";
     setSort(field);
@@ -53,7 +59,7 @@ export default function SchoolCatalog() {
           </tr>
         </thead>
         <tbody>
-          {sortedData.map((course, index) => (
+          {currentPage.map((course, index) => (
             <tr key={index}>
               <td>{course.trimester}</td>
               <td>{course.courseNumber}</td>
@@ -68,8 +74,8 @@ export default function SchoolCatalog() {
         </tbody>
       </table>
       <div className="pagination">
-        <button>Previous</button>
-        <button>Next</button>
+        <button disabled={!hasLess} onClick={() => setPage(page - 1)} style={{ cursor: "pointer" }}>Previous</button>
+        <button disabled={!hasMore} onClick={() => setPage(page + 1)} style={{ cursor: "pointer" }}>Next</button>
       </div>
     </div>
   );
