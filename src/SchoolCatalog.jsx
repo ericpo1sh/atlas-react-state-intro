@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { AppContext } from "./App";
 
 export default function SchoolCatalog() {
   const [courses, setCourses] = useState([]);
@@ -7,6 +8,7 @@ export default function SchoolCatalog() {
   const [direction, setDirection] = useState("asc");
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 5;
+  const { enrolledCourses, dropCourse, enrollCourse } = useContext(AppContext);
 
   useEffect(() => {
     fetch('/api/courses.json')
@@ -43,6 +45,11 @@ export default function SchoolCatalog() {
     setSort(field);
     setDirection(sortOrder);
   };
+
+  const isEnrolled = (courseNumber) => {
+    return enrolledCourses.some(course => course.courseNumber === courseNumber);
+  };
+
   return (
     <div className="school-catalog">
       <h1>School Catalog</h1>
@@ -67,7 +74,11 @@ export default function SchoolCatalog() {
               <td>{course.semesterCredits}</td>
               <td>{course.totalClockHours}</td>
               <td>
-              <button>Enroll</button>
+              {isEnrolled(course.courseNumber) ? (
+                <button disabled>Enroll</button>
+              ) : (
+                <button style={{ cursor: "pointer" }} onClick={() => enrollCourse(course)}>Enroll</button>
+              )}
               </td>
             </tr>
           ))}
